@@ -1,0 +1,170 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h2 class="h4 mb-1">Employees</h2>
+    <p class="text-muted mb-0">Search, filter and manage employee records.</p>
+  </div>
+  @if (canAdd) {
+    <a routerLink="/employees/new" class="btn btn-primary">
+      <i class="bi bi-plus-lg"></i> Add Employee
+    </a>
+  }
+</div>
+
+<!-- Search and filters -->
+<div class="card stat-card mb-3">
+  <div class="card-body">
+    <div class="row g-2">
+      <div class="col-12 col-lg-5">
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input
+            type="search"
+            class="form-control"
+            placeholder="Search by name, code or email"
+            aria-label="Search employees"
+            [value]="searchText()"
+            (input)="onSearch($event)"
+          />
+        </div>
+      </div>
+
+      <div class="col-6 col-lg-3">
+        <select class="form-select" aria-label="Filter by department" (change)="onDepartmentChange($event)">
+          <option value="0" [selected]="departmentFilter() === 0">All departments</option>
+          @for (d of departments(); track d.id) {
+            <option [value]="d.id" [selected]="departmentFilter() === d.id">{{ d.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="col-6 col-lg-2">
+        <select class="form-select" aria-label="Filter by status" (change)="onStatusChange($event)">
+          <option value="" [selected]="statusFilter() === ''">All statuses</option>
+          @for (s of statuses; track s) {
+            <option [value]="s" [selected]="statusFilter() === s">{{ s }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="col-12 col-lg-2">
+        <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+          <i class="bi bi-x-circle"></i> Clear
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-2">Loading employees...</p>
+  </div>
+} @else if (errorMessage()) {
+  <div class="alert alert-danger d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-exclamation-triangle"></i> {{ errorMessage() }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="loadData()">Retry</button>
+  </div>
+} @else {
+  <div class="card stat-card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Employee</th>
+            <th>Code</th>
+            <th>Department</th>
+            <th>Designation</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of pagedEmployees(); track e.id) {
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  @if (e.profileImageUrl) {
+                    <img class="avatar" [src]="e.profileImageUrl" [alt]="e.firstName" />
+                  } @else {
+                    <span class="avatar">{{ initials(e) }}</span>
+                  }
+                  <div>
+                    <div class="fw-semibold">{{ e.firstName }} {{ e.lastName }}</div>
+                    <div class="text-muted small">{{ e.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>{{ e.employeeCode }}</td>
+              <td>{{ departmentName(e.departmentId) }}</td>
+              <td>{{ e.designation }}</td>
+              <td>
+                <span [class]="'badge ' + statusClass(e.employmentStatus)">
+                  {{ e.employmentStatus }}
+                </span>
+              </td>
+              <td class="text-end text-nowrap">
+                <a [routerLink]="['/employees', e.id]" class="btn btn-sm btn-outline-primary" title="View">
+                  <i class="bi bi-eye"></i>
+                </a>
+                @if (canEdit) {
+                  <a [routerLink]="['/employees', e.id, 'edit']" class="btn btn-sm btn-outline-secondary ms-1" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                }
+                @if (canDelete) {
+                  <button type="button" class="btn btn-sm btn-outline-danger ms-1" title="Delete" (click)="askDelete(e)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center text-muted py-5">
+                <i class="bi bi-people fs-1 d-block mb-2"></i>
+                No employees match your search or filters.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="card-footer bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <small class="text-muted">
+        Showing {{ rangeStart() }}-{{ rangeEnd() }} of {{ filteredEmployees().length }} employees
+      </small>
+
+      <nav aria-label="Employee pages">
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item" [class.disabled]="page() === 1">
+            <button type="button" class="page-link" (click)="goToPage(page() - 1)">Previous</button>
+          </li>
+          @for (n of pageNumbers(); track n) {
+            <li class="page-item" [class.active]="n === page()">
+              <button type="button" class="page-link" (click)="goToPage(n)">{{ n }}</button>
+            </li>
+          }
+          <li class="page-item" [class.disabled]="page() === totalPages()">
+            <button type="button" class="page-link" (click)="goToPage(page() + 1)">Next</button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+}
+
+@if (employeeToDelete(); as emp) {
+  <app-confirm-dialog
+    title="Delete employee"
+    confirmText="Delete"
+    [message]="'Delete ' + emp.firstName + ' ' + emp.lastName + ' (' + emp.employeeCode + ')? This cannot be undone.'"
+    [busy]="deleting()"
+    (confirmed)="confirmDelete()"
+    (cancelled)="cancelDelete()"
+  />
+}

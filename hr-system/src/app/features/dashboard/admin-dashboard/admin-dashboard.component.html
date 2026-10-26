@@ -1,0 +1,171 @@
+<div class="mb-4">
+  <h2 class="h4 mb-1">Admin Dashboard</h2>
+  <p class="text-muted mb-0">Live numbers from the API.</p>
+</div>
+
+<!-- Today's attendance + Mark Present (works for the logged-in user's own account) -->
+<div class="row g-3 mb-3">
+  <div class="col-12 col-md-6 col-xl-4">
+    <app-punch-card (punched)="reloadAttendance()" />
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-2">Loading dashboard...</p>
+  </div>
+} @else if (errorMessage()) {
+  <div class="alert alert-danger d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-exclamation-triangle"></i> {{ errorMessage() }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="loadData()">Retry</button>
+  </div>
+} @else {
+  <!-- Cards -->
+  <div class="row g-3 mb-3">
+    @for (card of cards(); track card.title) {
+      <div class="col-6 col-xl">
+        <div class="card stat-card h-100">
+          <div class="card-body d-flex align-items-center gap-3">
+            <div [class]="'stat-icon text-bg-' + card.color">
+              <i [class]="'bi ' + card.icon"></i>
+            </div>
+            <div>
+              <div class="text-muted small">{{ card.title }}</div>
+              <div class="fs-3 fw-bold lh-1">{{ card.value }}</div>
+              <div class="text-muted small mt-1">{{ card.hint }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="row g-3 mb-3">
+    <!-- Recent employees -->
+    <div class="col-12 col-xl-6">
+      <div class="card stat-card h-100">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <span class="fw-semibold"><i class="bi bi-person-plus"></i> Recent employees</span>
+          <a routerLink="/employees" class="btn btn-sm btn-outline-secondary">View all</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr><th>Name</th><th>Department</th><th>Joined</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              @for (e of recentEmployees(); track e.id) {
+                <tr>
+                  <td>
+                    <a [routerLink]="['/employees', e.id]" class="text-decoration-none">
+                      {{ e.firstName }} {{ e.lastName }}
+                    </a>
+                  </td>
+                  <td>{{ departmentName(e.departmentId) }}</td>
+                  <td>{{ e.joiningDate | date: 'd MMM y' }}</td>
+                  <td><span [class]="'badge ' + employeeClass(e.employmentStatus)">{{ e.employmentStatus }}</span></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="4" class="text-center text-muted py-4">No employees yet.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent leave requests -->
+    <div class="col-12 col-xl-6">
+      <div class="card stat-card h-100">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <span class="fw-semibold"><i class="bi bi-calendar-check"></i> Recent leave requests</span>
+          <a routerLink="/leave" class="btn btn-sm btn-outline-secondary">View all</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr><th>Employee</th><th>Type</th><th>From</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+              @for (r of recentLeaves(); track r.id) {
+                <tr>
+                  <td>{{ employeeName(r.employeeId) }}</td>
+                  <td>{{ r.leaveType }}</td>
+                  <td>{{ r.startDate | date: 'd MMM y' }}</td>
+                  <td><span [class]="'badge ' + leaveClass(r.status)">{{ r.status }}</span></td>
+                  <td class="text-end">
+                    <a [routerLink]="['/leave', r.id]" class="btn btn-sm btn-outline-primary" title="View details">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="text-center text-muted py-4">No leave requests yet.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <!-- Attendance summary -->
+    <div class="col-12 col-lg-6">
+      <div class="card stat-card h-100">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <span class="fw-semibold"><i class="bi bi-clock-history"></i> Attendance summary</span>
+          <a routerLink="/attendance" class="btn btn-sm btn-outline-secondary">Open</a>
+        </div>
+        <div class="card-body">
+          @if (attendanceOverview(); as a) {
+            <p class="text-muted small">
+              Latest recorded day: <strong>{{ a.date | date: 'EEE, d MMM y' }}</strong> ({{ a.total }} records)
+            </p>
+            <div class="row g-2 text-center">
+              <div class="col-3"><div class="fs-4 fw-bold text-success">{{ a.present }}</div><div class="small text-muted">Present</div></div>
+              <div class="col-3"><div class="fs-4 fw-bold text-warning">{{ a.late }}</div><div class="small text-muted">Late</div></div>
+              <div class="col-3"><div class="fs-4 fw-bold text-info">{{ a.halfDay }}</div><div class="small text-muted">Half Day</div></div>
+              <div class="col-3"><div class="fs-4 fw-bold text-danger">{{ a.absent }}</div><div class="small text-muted">Absent</div></div>
+            </div>
+            <small class="text-muted d-block mt-3">Attendance is entered manually in this demo.</small>
+          } @else {
+            <p class="text-muted mb-0">No attendance records yet.</p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Payroll summary -->
+    <div class="col-12 col-lg-6">
+      <div class="card stat-card h-100">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <span class="fw-semibold"><i class="bi bi-cash-stack"></i> Payroll summary</span>
+          <a routerLink="/payroll" class="btn btn-sm btn-outline-secondary">Open</a>
+        </div>
+        <div class="card-body">
+          @if (payrollOverview(); as p) {
+            <p class="text-muted small">
+              Latest salary month: <strong>{{ (p.month + '-01') | date: 'MMMM y' }}</strong> ({{ p.count }} records)
+            </p>
+            <div class="mb-3">
+              <div class="text-muted small">Total net salary</div>
+              <div class="fs-3 fw-bold text-primary">{{ p.totalNet | currency: 'INR' : 'symbol' : '1.0-0' }}</div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge text-bg-success">Paid: {{ p.paid }}</span>
+              <span class="badge text-bg-primary">Processed: {{ p.processed }}</span>
+              <span class="badge text-bg-secondary">Draft: {{ p.draft }}</span>
+            </div>
+            <small class="text-muted d-block mt-3">Demo payroll only. Not tax-compliant.</small>
+          } @else {
+            <p class="text-muted mb-0">No payroll records yet.</p>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

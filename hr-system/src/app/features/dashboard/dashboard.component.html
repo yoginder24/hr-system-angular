@@ -1,0 +1,12 @@
+<!-- Show a different dashboard for each role -->
+@switch (user()?.role) {
+  @case ('Admin') {
+    <app-admin-dashboard />
+  }
+  @case ('HR') {
+    <app-hr-dashboard />
+  }
+  @case ('Employee') {
+    <app-employee-dashboard />
+  }
+}

@@ -1,0 +1,136 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h2 class="h4 mb-1">Departments</h2>
+    <p class="text-muted mb-0">Manage departments, managers and team sizes.</p>
+  </div>
+  @if (canManage) {
+    <a routerLink="/departments/new" class="btn btn-primary">
+      <i class="bi bi-plus-lg"></i> Add Department
+    </a>
+  }
+</div>
+
+<!-- Search and filter -->
+<div class="card stat-card mb-3">
+  <div class="card-body">
+    <div class="row g-2">
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input
+            type="search"
+            class="form-control"
+            placeholder="Search by name or description"
+            aria-label="Search departments"
+            [value]="searchText()"
+            (input)="onSearch($event)"
+          />
+        </div>
+      </div>
+      <div class="col-7 col-md-4">
+        <select class="form-select" aria-label="Filter by employees" (change)="onFilterChange($event)">
+          <option value="all" [selected]="countFilter() === 'all'">All departments</option>
+          <option value="withEmployees" [selected]="countFilter() === 'withEmployees'">With employees</option>
+          <option value="empty" [selected]="countFilter() === 'empty'">Empty departments</option>
+        </select>
+      </div>
+      <div class="col-5 col-md-2">
+        <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+          <i class="bi bi-x-circle"></i> Clear
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-2">Loading departments...</p>
+  </div>
+} @else if (errorMessage()) {
+  <div class="alert alert-danger d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-exclamation-triangle"></i> {{ errorMessage() }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="loadData()">Retry</button>
+  </div>
+} @else {
+  <div class="card stat-card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Department</th>
+            <th>Description</th>
+            <th>Manager</th>
+            <th class="text-center">Employees</th>
+            @if (canManage || canDelete) {
+              <th class="text-end">Actions</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filteredRows(); track row.id) {
+            <tr>
+              <td class="fw-semibold">{{ row.name }}</td>
+              <td class="text-muted">{{ row.description }}</td>
+              <td>{{ row.managerName }}</td>
+              <td class="text-center">
+                <span class="badge rounded-pill text-bg-primary">{{ row.employeeCount }}</span>
+              </td>
+              @if (canManage || canDelete) {
+                <td class="text-end text-nowrap">
+                  @if (canManage) {
+                    <a [routerLink]="['/departments', row.id, 'edit']" class="btn btn-sm btn-outline-secondary" title="Edit">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                  }
+                  @if (canDelete) {
+                    <!-- The span carries the tooltip, because disabled buttons do not show one -->
+                    <span
+                      class="d-inline-block ms-1"
+                      [title]="row.employeeCount > 0 ? 'Cannot delete: employees are assigned' : 'Delete'"
+                    >
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        [disabled]="row.employeeCount > 0"
+                        (click)="askDelete(row)"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </span>
+                  }
+                </td>
+              }
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="text-center text-muted py-5">
+                <i class="bi bi-diagram-3 fs-1 d-block mb-2"></i>
+                No departments match your search or filter.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer bg-white">
+      <small class="text-muted">
+        Showing {{ filteredRows().length }} of {{ departments().length }} departments
+      </small>
+    </div>
+  </div>
+}
+
+@if (departmentToDelete(); as dep) {
+  <app-confirm-dialog
+    title="Delete department"
+    confirmText="Delete"
+    [message]="'Delete the ' + dep.name + ' department? This cannot be undone.'"
+    [busy]="deleting()"
+    (confirmed)="confirmDelete()"
+    (cancelled)="cancelDelete()"
+  />
+}

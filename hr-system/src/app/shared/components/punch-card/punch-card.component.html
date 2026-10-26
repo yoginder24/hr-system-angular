@@ -1,0 +1,110 @@
+<div class="card stat-card h-100">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <span class="fw-semibold"><i class="bi bi-clock-history"></i> Today's attendance</span>
+    @if (serverDate()) {
+      <small class="text-muted">{{ serverDate() | date: 'EEE, d MMM y' }}</small>
+    }
+  </div>
+
+  <div class="card-body">
+    @if (loading()) {
+      <div class="text-center py-3">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="text-muted ms-2">Loading...</span>
+      </div>
+    } @else if (loadError()) {
+      <div class="alert alert-danger py-2 small mb-2">
+        <i class="bi bi-exclamation-triangle"></i> {{ loadError() }}
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-danger" (click)="load()">Retry</button>
+    } @else if (record(); as r) {
+      @if (r.checkIn) {
+        <!-- Already marked: the button becomes "Checked In" -->
+        <button type="button" class="btn btn-success w-100 mb-3" disabled>
+          <i class="bi bi-check-circle-fill"></i> Checked In
+        </button>
+
+        <dl class="row mb-2">
+          <dt class="col-6">Status</dt>
+          <dd class="col-6"><span [class]="'badge ' + statusClass(r.status)">{{ r.status }}</span></dd>
+          <dt class="col-6">Check-in time</dt>
+          <dd class="col-6 fw-semibold">{{ r.checkIn }}</dd>
+          @if (r.checkOut) {
+            <dt class="col-6">Check-out</dt>
+            <dd class="col-6">{{ r.checkOut }}</dd>
+            <dt class="col-6">Hours</dt>
+            <dd class="col-6">{{ hours() }}</dd>
+          }
+        </dl>
+
+        <small class="text-muted d-block">
+          @if (r.source === 'self') {
+            Marked by you. The time was recorded by the server.
+          } @else {
+            Recorded by HR or Admin.
+          }
+        </small>
+        @if (r.location; as loc) {
+          <small class="text-muted d-block mt-1">
+            <i class="bi bi-geo-alt"></i> Location shared (accuracy about {{ loc.accuracy }} m)
+          </small>
+        }
+      } @else {
+        <!-- A record exists but there is no check-in time (for example Absent, entered by HR) -->
+        <div class="mb-2">
+          <span [class]="'badge fs-6 ' + statusClass(r.status)">{{ r.status }}</span>
+        </div>
+        <small class="text-muted">
+          HR or Admin has recorded your attendance for today. Please contact HR if this is not correct.
+        </small>
+      }
+    } @else if (canMark) {
+      <!-- Not marked yet: show the button -->
+      <button type="button" class="btn btn-primary w-100 mb-3" [disabled]="punching()" (click)="punchIn()">
+        @if (punching()) {
+          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+          Marking attendance...
+        } @else {
+          <i class="bi bi-box-arrow-in-right"></i> Mark Present
+        }
+      </button>
+
+      @if (locationSupported) {
+        <div class="form-check mb-2">
+          <input
+            id="shareLocation"
+            type="checkbox"
+            class="form-check-input"
+            [checked]="shareLocation()"
+            [disabled]="punching() || locationRequired()"
+            (change)="onLocationToggle($event)"
+          />
+          <label for="shareLocation" class="form-check-label">
+            Share my location @if (!locationRequired()) { (optional) }
+          </label>
+        </div>
+        <small class="text-muted d-block mb-2">
+          @if (locationRequired()) {
+            Your company requires your location for attendance. Your browser will ask for permission.
+          } @else {
+            Only used if you tick the box. Your browser will ask for permission first.
+          }
+        </small>
+      }
+
+      @if (errorMessage()) {
+        <div class="alert alert-danger py-2 small mb-2" role="alert">
+          <i class="bi bi-exclamation-triangle"></i> {{ errorMessage() }}
+        </div>
+      }
+
+      <small class="text-muted d-block">
+        The check-in time is recorded by the server when you click. You can mark attendance once per day.
+      </small>
+    } @else {
+      <p class="text-muted mb-0">Your role cannot mark attendance.</p>
+    }
+  </div>
+</div>

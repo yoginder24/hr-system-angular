@@ -1,0 +1,20 @@
+<aside class="sidebar" [class.open]="isOpen()">
+  <div class="sidebar-brand">
+    <i class="bi bi-people-fill"></i>
+    <span>HR System</span>
+  </div>
+
+  <nav class="p-3">
+    @for (item of visibleItems(); track item.path) {
+      <a
+        class="sidebar-link"
+        [routerLink]="item.path"
+        routerLinkActive="active"
+        (click)="linkClicked.emit()"
+      >
+        <i [class]="'bi ' + item.icon"></i>
+        <span>{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+</aside>

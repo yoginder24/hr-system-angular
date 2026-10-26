@@ -1,0 +1,27 @@
+<header class="topbar d-flex align-items-center justify-content-between px-3 px-lg-4">
+  <div class="d-flex align-items-center gap-2">
+    <button
+      type="button"
+      class="btn btn-light d-lg-none"
+      aria-label="Toggle menu"
+      (click)="menuClick.emit()"
+    >
+      <i class="bi bi-list fs-4"></i>
+    </button>
+    <span class="fw-semibold fs-5">HR Management</span>
+  </div>
+
+  <div class="d-flex align-items-center gap-3">
+    @if (user(); as u) {
+      <div class="text-end d-none d-sm-block">
+        <div class="fw-semibold lh-1">{{ u.name }}</div>
+        <span class="badge text-bg-primary mt-1">{{ u.role }}</span>
+      </div>
+    }
+    <i class="bi bi-person-circle fs-3 text-secondary"></i>
+    <button type="button" class="btn btn-outline-danger btn-sm" (click)="logout()">
+      <i class="bi bi-box-arrow-right"></i>
+      <span class="d-none d-md-inline ms-1">Logout</span>
+    </button>
+  </div>
+</header>

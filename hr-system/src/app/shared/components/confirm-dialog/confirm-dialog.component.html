@@ -1,0 +1,25 @@
+<div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ title() }}</h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="cancelled.emit()"></button>
+      </div>
+      <div class="modal-body">{{ message() }}</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" [disabled]="busy()" (click)="cancelled.emit()">
+          Cancel
+        </button>
+        <button type="button" [class]="'btn ' + confirmClass()" [disabled]="busy()" (click)="confirmed.emit()">
+          @if (busy()) {
+            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+          }
+          {{ confirmText() }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- The dark layer behind the dialog -->
+<div class="modal-backdrop fade show"></div>

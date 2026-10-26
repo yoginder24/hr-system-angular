@@ -1,0 +1,190 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h2 class="h4 mb-1">{{ canViewAll ? 'Attendance' : 'My Attendance' }}</h2>
+    <p class="text-muted mb-0">
+      {{ canViewAll ? 'View and manage attendance records entered by HR and Admin.' : 'Your attendance records.' }}
+    </p>
+  </div>
+  @if (canManage) {
+    <a routerLink="/attendance/new" class="btn btn-primary">
+      <i class="bi bi-plus-lg"></i> Add Record
+    </a>
+  }
+</div>
+
+<!-- Filters -->
+<div class="card stat-card mb-3">
+  <div class="card-body">
+    <div class="row g-2">
+      @if (canViewAll) {
+        <div class="col-12 col-md-4">
+          <select class="form-select" aria-label="Filter by employee" (change)="onEmployeeChange($event)">
+            <option value="0" [selected]="employeeFilter() === 0">All employees</option>
+            @for (e of employeeOptions(); track e.id) {
+              <option [value]="e.id" [selected]="employeeFilter() === e.id">
+                {{ e.firstName }} {{ e.lastName }}
+              </option>
+            }
+          </select>
+        </div>
+      }
+
+      <div class="col-6" [class.col-md-3]="canViewAll" [class.col-md-5]="!canViewAll">
+        <input
+          type="date"
+          class="form-control"
+          aria-label="Filter by date"
+          [value]="dateFilter()"
+          (input)="onDateChange($event)"
+        />
+      </div>
+
+      <div class="col-6" [class.col-md-3]="canViewAll" [class.col-md-4]="!canViewAll">
+        <select class="form-select" aria-label="Filter by status" (change)="onStatusChange($event)">
+          <option value="" [selected]="statusFilter() === ''">All statuses</option>
+          @for (s of statuses; track s) {
+            <option [value]="s" [selected]="statusFilter() === s">{{ s }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="col-12" [class.col-md-2]="canViewAll" [class.col-md-3]="!canViewAll">
+        <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+          <i class="bi bi-x-circle"></i> Clear
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-2">Loading attendance...</p>
+  </div>
+} @else if (errorMessage()) {
+  <div class="alert alert-danger d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-exclamation-triangle"></i> {{ errorMessage() }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="loadData()">Retry</button>
+  </div>
+} @else {
+  <!-- Summary of the rows shown below -->
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-lg">
+      <div class="card stat-card h-100"><div class="card-body py-3">
+        <div class="text-muted small">Records</div>
+        <div class="fs-4 fw-bold">{{ summary().total }}</div>
+      </div></div>
+    </div>
+    <div class="col-6 col-lg">
+      <div class="card stat-card h-100"><div class="card-body py-3">
+        <div class="text-muted small">Present</div>
+        <div class="fs-4 fw-bold text-success">{{ summary().present }}</div>
+      </div></div>
+    </div>
+    <div class="col-6 col-lg">
+      <div class="card stat-card h-100"><div class="card-body py-3">
+        <div class="text-muted small">Late</div>
+        <div class="fs-4 fw-bold text-warning">{{ summary().late }}</div>
+      </div></div>
+    </div>
+    <div class="col-6 col-lg">
+      <div class="card stat-card h-100"><div class="card-body py-3">
+        <div class="text-muted small">Half Day</div>
+        <div class="fs-4 fw-bold text-info">{{ summary().halfDay }}</div>
+      </div></div>
+    </div>
+    <div class="col-12 col-lg">
+      <div class="card stat-card h-100"><div class="card-body py-3">
+        <div class="text-muted small">Absent</div>
+        <div class="fs-4 fw-bold text-danger">{{ summary().absent }}</div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="card stat-card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            @if (canViewAll) {
+              <th>Employee</th>
+            }
+            <th>Date</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
+            <th>Hours</th>
+            <th>Status</th>
+            @if (canManage || canDelete) {
+              <th class="text-end">Actions</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of filteredRecords(); track r.id) {
+            <tr>
+              @if (canViewAll) {
+                <td class="fw-semibold">{{ employeeName(r.employeeId) }}</td>
+              }
+              <td>{{ r.date | date: 'EEE, d MMM y' }}</td>
+              <td>
+                {{ r.checkIn || '-' }}
+                @if (r.source === 'self') {
+                  <i class="bi bi-person-check text-success ms-1" title="Marked by the employee (Mark Present)"></i>
+                }
+                @if (r.location; as loc) {
+                  <i
+                    class="bi bi-geo-alt text-primary ms-1"
+                    [title]="'Location shared: ' + loc.lat + ', ' + loc.lng + ' (accuracy about ' + loc.accuracy + ' m)'"
+                  ></i>
+                }
+              </td>
+              <td>{{ r.checkOut || '-' }}</td>
+              <td>{{ hours(r) }}</td>
+              <td><span [class]="'badge ' + statusClass(r.status)">{{ r.status }}</span></td>
+              @if (canManage || canDelete) {
+                <td class="text-end text-nowrap">
+                  @if (canManage) {
+                    <a [routerLink]="['/attendance', r.id, 'edit']" class="btn btn-sm btn-outline-secondary" title="Edit">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                  }
+                  @if (canDelete) {
+                    <button type="button" class="btn btn-sm btn-outline-danger ms-1" title="Delete" (click)="askDelete(r)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  }
+                </td>
+              }
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="text-center text-muted py-5">
+                <i class="bi bi-clock-history fs-1 d-block mb-2"></i>
+                No attendance records match your filters.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer bg-white">
+      <small class="text-muted">
+        Hours are calculated from the check-in and check-out times. The person icon means the employee used Mark Present; the pin icon means they chose to share their location.
+      </small>
+    </div>
+  </div>
+}
+
+@if (recordToDelete(); as rec) {
+  <app-confirm-dialog
+    title="Delete attendance record"
+    confirmText="Delete"
+    [message]="'Delete the record of ' + employeeName(rec.employeeId) + ' on ' + rec.date + '? This cannot be undone.'"
+    [busy]="deleting()"
+    (confirmed)="confirmDelete()"
+    (cancelled)="cancelDelete()"
+  />
+}

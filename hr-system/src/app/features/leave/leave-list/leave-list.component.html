@@ -1,0 +1,157 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h2 class="h4 mb-1">{{ canViewAll ? 'Leave Requests' : 'My Leave' }}</h2>
+    <p class="text-muted mb-0">
+      {{ canViewAll ? 'Review leave requests and apply for your own leave.' : 'Apply for leave and track your requests.' }}
+    </p>
+  </div>
+  @if (canApply) {
+    <a routerLink="/leave/new" class="btn btn-primary">
+      <i class="bi bi-plus-lg"></i> Apply for Leave
+    </a>
+  }
+</div>
+
+<!-- Filters -->
+<div class="card stat-card mb-3">
+  <div class="card-body">
+    <div class="row g-2">
+      @if (canViewAll) {
+        <div class="col-12 col-md-5">
+          <select class="form-select" aria-label="Filter by employee" (change)="onEmployeeChange($event)">
+            <option value="0" [selected]="employeeFilter() === 0">All employees</option>
+            @for (e of employeeOptions(); track e.id) {
+              <option [value]="e.id" [selected]="employeeFilter() === e.id">
+                {{ e.firstName }} {{ e.lastName }}
+              </option>
+            }
+          </select>
+        </div>
+      }
+
+      <div class="col-7" [class.col-md-4]="canViewAll" [class.col-md-8]="!canViewAll">
+        <select class="form-select" aria-label="Filter by status" (change)="onStatusChange($event)">
+          <option value="" [selected]="statusFilter() === ''">All statuses</option>
+          @for (s of statuses; track s) {
+            <option [value]="s" [selected]="statusFilter() === s">{{ s }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="col-5" [class.col-md-3]="canViewAll" [class.col-md-4]="!canViewAll">
+        <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+          <i class="bi bi-x-circle"></i> Clear
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-2">Loading leave requests...</p>
+  </div>
+} @else if (errorMessage()) {
+  <div class="alert alert-danger d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-exclamation-triangle"></i> {{ errorMessage() }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="loadData()">Retry</button>
+  </div>
+} @else {
+  <!-- Counts -->
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-sm-4">
+      <div class="card stat-card h-100"><div class="card-body py-3">
+        <div class="text-muted small">Pending</div>
+        <div class="fs-4 fw-bold text-warning">{{ counts().pending }}</div>
+      </div></div>
+    </div>
+    <div class="col-6 col-sm-4">
+      <div class="card stat-card h-100"><div class="card-body py-3">
+        <div class="text-muted small">Approved</div>
+        <div class="fs-4 fw-bold text-success">{{ counts().approved }}</div>
+      </div></div>
+    </div>
+    <div class="col-6 col-sm-4">
+      <div class="card stat-card h-100"><div class="card-body py-3">
+        <div class="text-muted small">Rejected</div>
+        <div class="fs-4 fw-bold text-danger">{{ counts().rejected }}</div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="card stat-card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            @if (canViewAll) {
+              <th>Employee</th>
+            }
+            <th>Type</th>
+            <th>From</th>
+            <th>To</th>
+            <th class="text-center">Days</th>
+            <th>Applied on</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of filteredRequests(); track r.id) {
+            <tr>
+              @if (canViewAll) {
+                <td class="fw-semibold">{{ employeeName(r.employeeId) }}</td>
+              }
+              <td>{{ r.leaveType }}</td>
+              <td>{{ r.startDate | date: 'd MMM y' }}</td>
+              <td>{{ r.endDate | date: 'd MMM y' }}</td>
+              <td class="text-center">{{ days(r) }}</td>
+              <td>{{ r.appliedOn | date: 'd MMM y' }}</td>
+              <td><span [class]="'badge ' + statusClass(r.status)">{{ r.status }}</span></td>
+              <td class="text-end text-nowrap">
+                <a [routerLink]="['/leave', r.id]" class="btn btn-sm btn-outline-primary" title="View details">
+                  <i class="bi bi-eye"></i>
+                </a>
+                @if (canReview(r)) {
+                  <button type="button" class="btn btn-sm btn-success ms-1" title="Approve" (click)="askReview(r, 'Approved')">
+                    <i class="bi bi-check-lg"></i>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-danger ms-1" title="Reject" (click)="askReview(r, 'Rejected')">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="text-center text-muted py-5">
+                <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
+                No leave requests match your filters.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer bg-white">
+      <small class="text-muted">
+        Days are counted as calendar days (weekends and holidays are not excluded).
+      </small>
+    </div>
+  </div>
+}
+
+@if (pendingReview(); as action) {
+  <app-confirm-dialog
+    [title]="action.status === 'Approved' ? 'Approve leave request' : 'Reject leave request'"
+    [confirmText]="action.status === 'Approved' ? 'Approve' : 'Reject'"
+    [confirmClass]="action.status === 'Approved' ? 'btn-success' : 'btn-danger'"
+    [message]="reviewMessage(action)"
+    [busy]="processing()"
+    (confirmed)="confirmReview()"
+    (cancelled)="cancelReview()"
+  />
+}

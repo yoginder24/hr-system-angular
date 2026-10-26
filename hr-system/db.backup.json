@@ -1,0 +1,52 @@
+{
+  "users": [
+    { "id": 1, "email": "aarav.sharma@company.com", "password": "Admin@123", "role": "Admin", "employeeId": 1 },
+    { "id": 2, "email": "priya.verma@company.com", "password": "Hr@12345", "role": "HR", "employeeId": 2 },
+    { "id": 3, "email": "rohan.gupta@company.com", "password": "Emp@12345", "role": "Employee", "employeeId": 3 },
+    { "id": 4, "email": "sneha.iyer@company.com", "password": "Emp@12345", "role": "Employee", "employeeId": 4 }
+  ],
+  "departments": [
+    { "id": 1, "name": "Human Resources", "description": "Handles hiring, policies and employee welfare.", "managerId": 2 },
+    { "id": 2, "name": "Engineering", "description": "Builds and maintains our software products.", "managerId": 4 },
+    { "id": 3, "name": "Finance", "description": "Manages accounts, budgets and payroll.", "managerId": 5 },
+    { "id": 4, "name": "Marketing", "description": "Promotes the company and its products.", "managerId": 6 },
+    { "id": 5, "name": "Sales", "description": "Finds customers and grows revenue.", "managerId": 7 }
+  ],
+  "employees": [
+    { "id": 1, "employeeCode": "EMP001", "firstName": "Aarav", "lastName": "Sharma", "email": "aarav.sharma@company.com", "phone": "+91 98765 00001", "gender": "Male", "dateOfBirth": "1982-04-12", "departmentId": 1, "designation": "Operations Head", "joiningDate": "2015-03-01", "employmentType": "Full-time", "salary": 120000, "employmentStatus": "Active", "address": "12 MG Road, Pune", "profileImageUrl": "" },
+    { "id": 2, "employeeCode": "EMP002", "firstName": "Priya", "lastName": "Verma", "email": "priya.verma@company.com", "phone": "+91 98765 00002", "gender": "Female", "dateOfBirth": "1988-09-23", "departmentId": 1, "designation": "HR Manager", "joiningDate": "2018-06-15", "employmentType": "Full-time", "salary": 85000, "employmentStatus": "Active", "address": "45 Park Street, Kolkata", "profileImageUrl": "" },
+    { "id": 3, "employeeCode": "EMP003", "firstName": "Rohan", "lastName": "Gupta", "email": "rohan.gupta@company.com", "phone": "+91 98765 00003", "gender": "Male", "dateOfBirth": "1996-01-30", "departmentId": 2, "designation": "Software Engineer", "joiningDate": "2022-08-01", "employmentType": "Full-time", "salary": 70000, "employmentStatus": "Active", "address": "8 Sector 62, Noida", "profileImageUrl": "" },
+    { "id": 4, "employeeCode": "EMP004", "firstName": "Sneha", "lastName": "Iyer", "email": "sneha.iyer@company.com", "phone": "+91 98765 00004", "gender": "Female", "dateOfBirth": "1993-11-05", "departmentId": 2, "designation": "Senior Developer", "joiningDate": "2019-02-11", "employmentType": "Full-time", "salary": 95000, "employmentStatus": "Active", "address": "22 Indiranagar, Bengaluru", "profileImageUrl": "" },
+    { "id": 5, "employeeCode": "EMP005", "firstName": "Karan", "lastName": "Mehta", "email": "karan.mehta@company.com", "phone": "+91 98765 00005", "gender": "Male", "dateOfBirth": "1990-07-19", "departmentId": 3, "designation": "Accountant", "joiningDate": "2020-01-20", "employmentType": "Full-time", "salary": 60000, "employmentStatus": "Active", "address": "17 Andheri West, Mumbai", "profileImageUrl": "" },
+    { "id": 6, "employeeCode": "EMP006", "firstName": "Anjali", "lastName": "Singh", "email": "anjali.singh@company.com", "phone": "+91 98765 00006", "gender": "Female", "dateOfBirth": "1997-03-08", "departmentId": 4, "designation": "Marketing Executive", "joiningDate": "2023-04-03", "employmentType": "Full-time", "salary": 55000, "employmentStatus": "Active", "address": "5 Civil Lines, Lucknow", "profileImageUrl": "" },
+    { "id": 7, "employeeCode": "EMP007", "firstName": "Vikram", "lastName": "Rao", "email": "vikram.rao@company.com", "phone": "+91 98765 00007", "gender": "Male", "dateOfBirth": "1985-12-14", "departmentId": 5, "designation": "Sales Manager", "joiningDate": "2016-10-10", "employmentType": "Full-time", "salary": 90000, "employmentStatus": "Active", "address": "31 Banjara Hills, Hyderabad", "profileImageUrl": "" },
+    { "id": 8, "employeeCode": "EMP008", "firstName": "Neha", "lastName": "Joshi", "email": "neha.joshi@company.com", "phone": "+91 98765 00008", "gender": "Female", "dateOfBirth": "1994-06-27", "departmentId": 2, "designation": "QA Engineer", "joiningDate": "2021-09-13", "employmentType": "Full-time", "salary": 58000, "employmentStatus": "On Leave", "address": "9 Koregaon Park, Pune", "profileImageUrl": "" },
+    { "id": 9, "employeeCode": "EMP009", "firstName": "Rahul", "lastName": "Das", "email": "rahul.das@company.com", "phone": "+91 98765 00009", "gender": "Male", "dateOfBirth": "1999-02-16", "departmentId": 5, "designation": "Sales Executive", "joiningDate": "2024-01-08", "employmentType": "Contract", "salary": 40000, "employmentStatus": "Inactive", "address": "14 Salt Lake, Kolkata", "profileImageUrl": "" }
+  ],
+  "attendance": [
+    { "id": 1, "employeeId": 3, "date": "2026-10-12", "checkIn": "09:05", "checkOut": "18:02", "status": "Present" },
+    { "id": 2, "employeeId": 4, "date": "2026-10-12", "checkIn": "09:00", "checkOut": "18:10", "status": "Present" },
+    { "id": 3, "employeeId": 5, "date": "2026-10-12", "checkIn": "09:45", "checkOut": "18:00", "status": "Late" },
+    { "id": 4, "employeeId": 6, "date": "2026-10-12", "checkIn": "", "checkOut": "", "status": "Absent" },
+    { "id": 5, "employeeId": 7, "date": "2026-10-12", "checkIn": "09:00", "checkOut": "13:00", "status": "Half Day" },
+    { "id": 6, "employeeId": 3, "date": "2026-10-13", "checkIn": "09:02", "checkOut": "", "status": "Present" },
+    { "id": 7, "employeeId": 4, "date": "2026-10-13", "checkIn": "09:50", "checkOut": "18:05", "status": "Late" },
+    { "id": 8, "employeeId": 2, "date": "2026-10-13", "checkIn": "08:55", "checkOut": "17:50", "status": "Present" },
+    { "id": 9, "employeeId": 1, "date": "2026-10-13", "checkIn": "09:10", "checkOut": "", "status": "Present" }
+  ],
+  "leaveRequests": [
+    { "id": 1, "employeeId": 3, "leaveType": "Casual", "startDate": "2026-10-20", "endDate": "2026-10-21", "reason": "Family function", "status": "Pending", "appliedOn": "2026-10-10", "reviewedBy": null },
+    { "id": 2, "employeeId": 4, "leaveType": "Sick", "startDate": "2026-10-05", "endDate": "2026-10-06", "reason": "Fever and rest", "status": "Approved", "appliedOn": "2026-10-04", "reviewedBy": 2 },
+    { "id": 3, "employeeId": 8, "leaveType": "Annual", "startDate": "2026-10-12", "endDate": "2026-10-16", "reason": "Family trip", "status": "Approved", "appliedOn": "2026-09-28", "reviewedBy": 2 },
+    { "id": 4, "employeeId": 6, "leaveType": "Casual", "startDate": "2026-10-28", "endDate": "2026-10-28", "reason": "Personal work", "status": "Pending", "appliedOn": "2026-10-11", "reviewedBy": null },
+    { "id": 5, "employeeId": 3, "leaveType": "Sick", "startDate": "2026-09-10", "endDate": "2026-09-11", "reason": "Dental surgery", "status": "Rejected", "appliedOn": "2026-09-09", "reviewedBy": 1 }
+  ],
+  "payroll": [
+    { "id": 1, "employeeId": 3, "salaryMonth": "2026-08", "basicSalary": 70000, "allowances": 8000, "deductions": 5000, "netSalary": 73000, "status": "Paid" },
+    { "id": 2, "employeeId": 3, "salaryMonth": "2026-09", "basicSalary": 70000, "allowances": 8000, "deductions": 5000, "netSalary": 73000, "status": "Paid" },
+    { "id": 3, "employeeId": 4, "salaryMonth": "2026-09", "basicSalary": 95000, "allowances": 10000, "deductions": 7500, "netSalary": 97500, "status": "Paid" },
+    { "id": 4, "employeeId": 2, "salaryMonth": "2026-09", "basicSalary": 85000, "allowances": 9000, "deductions": 6000, "netSalary": 88000, "status": "Processed" },
+    { "id": 5, "employeeId": 1, "salaryMonth": "2026-09", "basicSalary": 120000, "allowances": 15000, "deductions": 10000, "netSalary": 125000, "status": "Processed" },
+    { "id": 6, "employeeId": 4, "salaryMonth": "2026-08", "basicSalary": 95000, "allowances": 10000, "deductions": 7500, "netSalary": 97500, "status": "Paid" }
+  ]
+}

@@ -1,0 +1,72 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="h4 mb-0">Leave Request Details</h2>
+  <a routerLink="/leave" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left"></i> Back to list
+  </a>
+</div>
+
+@if (loading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+} @else if (errorMessage()) {
+  <div class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle"></i> {{ errorMessage() }}
+  </div>
+} @else if (request(); as r) {
+  <div class="card stat-card">
+    <div class="card-body">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+          <h3 class="h5 mb-1">{{ employeeName() }}</h3>
+          <span [class]="'badge ' + statusClass(r.status)">{{ r.status }}</span>
+        </div>
+
+        @if (canReview()) {
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-success" (click)="askReview('Approved')">
+              <i class="bi bi-check-lg"></i> Approve
+            </button>
+            <button type="button" class="btn btn-danger" (click)="askReview('Rejected')">
+              <i class="bi bi-x-lg"></i> Reject
+            </button>
+          </div>
+        }
+      </div>
+
+      <dl class="row mb-0">
+        <dt class="col-5 col-md-3">Leave type</dt><dd class="col-7 col-md-9">{{ r.leaveType }}</dd>
+        <dt class="col-5 col-md-3">From</dt><dd class="col-7 col-md-9">{{ r.startDate | date: 'fullDate' }}</dd>
+        <dt class="col-5 col-md-3">To</dt><dd class="col-7 col-md-9">{{ r.endDate | date: 'fullDate' }}</dd>
+        <dt class="col-5 col-md-3">Total days</dt><dd class="col-7 col-md-9">{{ days() }} (calendar days)</dd>
+        <dt class="col-5 col-md-3">Reason</dt><dd class="col-7 col-md-9">{{ r.reason }}</dd>
+        <dt class="col-5 col-md-3">Applied on</dt><dd class="col-7 col-md-9">{{ r.appliedOn | date: 'mediumDate' }}</dd>
+        <dt class="col-5 col-md-3">Decision by</dt>
+        <dd class="col-7 col-md-9">
+          @if (r.status === 'Pending') {
+            Waiting for a decision
+          } @else {
+            {{ reviewerName() || 'Unknown' }}
+            @if (r.reviewedOn) {
+              <span class="text-muted">on {{ r.reviewedOn | date: 'mediumDate' }}</span>
+            }
+          }
+        </dd>
+      </dl>
+    </div>
+  </div>
+}
+
+@if (pendingStatus(); as status) {
+  <app-confirm-dialog
+    [title]="status === 'Approved' ? 'Approve leave request' : 'Reject leave request'"
+    [confirmText]="status === 'Approved' ? 'Approve' : 'Reject'"
+    [confirmClass]="status === 'Approved' ? 'btn-success' : 'btn-danger'"
+    [message]="(status === 'Approved' ? 'Approve' : 'Reject') + ' the leave request of ' + employeeName() + '?'"
+    [busy]="processing()"
+    (confirmed)="confirmReview()"
+    (cancelled)="cancelReview()"
+  />
+}

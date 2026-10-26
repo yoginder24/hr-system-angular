@@ -1,0 +1,160 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="h4 mb-0">{{ editId === null ? 'Add Employee' : 'Edit Employee' }}</h2>
+  <a routerLink="/employees" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left"></i> Back to list
+  </a>
+</div>
+
+@if (loading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+} @else if (loadError()) {
+  <div class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle"></i> {{ loadError() }}
+  </div>
+} @else {
+  <div class="card stat-card">
+    <div class="card-body">
+      @if (formError()) {
+        <div class="alert alert-danger py-2" role="alert">
+          <i class="bi bi-exclamation-triangle"></i> {{ formError() }}
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <div class="row g-3">
+          <!-- Employee code -->
+          <div class="col-12 col-md-4">
+            <label for="employeeCode" class="form-label">Employee code *</label>
+            <input id="employeeCode" class="form-control" formControlName="employeeCode"
+                   placeholder="EMP010" [class.is-invalid]="isInvalid(f.employeeCode)" />
+            <div class="invalid-feedback">{{ errorOf(f.employeeCode, 'Employee code') }}</div>
+            <div class="form-text">3-15 letters, numbers or dashes.</div>
+          </div>
+
+          <!-- Names -->
+          <div class="col-12 col-md-4">
+            <label for="firstName" class="form-label">First name *</label>
+            <input id="firstName" class="form-control" formControlName="firstName"
+                   [class.is-invalid]="isInvalid(f.firstName)" />
+            <div class="invalid-feedback">{{ errorOf(f.firstName, 'First name') }}</div>
+          </div>
+          <div class="col-12 col-md-4">
+            <label for="lastName" class="form-label">Last name *</label>
+            <input id="lastName" class="form-control" formControlName="lastName"
+                   [class.is-invalid]="isInvalid(f.lastName)" />
+            <div class="invalid-feedback">{{ errorOf(f.lastName, 'Last name') }}</div>
+          </div>
+
+          <!-- Contact -->
+          <div class="col-12 col-md-6">
+            <label for="email" class="form-label">Email *</label>
+            <input id="email" type="email" class="form-control" formControlName="email"
+                   [class.is-invalid]="isInvalid(f.email)" />
+            <div class="invalid-feedback">{{ errorOf(f.email, 'Email') }}</div>
+          </div>
+          <div class="col-12 col-md-6">
+            <label for="phone" class="form-label">Phone *</label>
+            <input id="phone" class="form-control" formControlName="phone"
+                   placeholder="+91 98765 00010" [class.is-invalid]="isInvalid(f.phone)" />
+            <div class="invalid-feedback">{{ errorOf(f.phone, 'Phone') }}</div>
+            <div class="form-text">10-15 characters: digits, +, - or spaces.</div>
+          </div>
+
+          <!-- Personal -->
+          <div class="col-12 col-md-6">
+            <label for="gender" class="form-label">Gender *</label>
+            <select id="gender" class="form-select" formControlName="gender">
+              @for (g of genders; track g) {
+                <option [value]="g">{{ g }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label for="dateOfBirth" class="form-label">Date of birth *</label>
+            <input id="dateOfBirth" type="date" class="form-control" formControlName="dateOfBirth"
+                   [class.is-invalid]="isInvalid(f.dateOfBirth)" />
+            <div class="invalid-feedback">{{ errorOf(f.dateOfBirth, 'Date of birth') }}</div>
+          </div>
+
+          <!-- Job -->
+          <div class="col-12 col-md-6">
+            <label for="departmentId" class="form-label">Department *</label>
+            <select id="departmentId" class="form-select" formControlName="departmentId"
+                    [class.is-invalid]="isInvalid(f.departmentId)">
+              <option [ngValue]="0" disabled>Select department</option>
+              @for (d of departments(); track d.id) {
+                <option [ngValue]="d.id">{{ d.name }}</option>
+              }
+            </select>
+            <div class="invalid-feedback">{{ errorOf(f.departmentId, 'Department') }}</div>
+          </div>
+          <div class="col-12 col-md-6">
+            <label for="designation" class="form-label">Designation *</label>
+            <input id="designation" class="form-control" formControlName="designation"
+                   [class.is-invalid]="isInvalid(f.designation)" />
+            <div class="invalid-feedback">{{ errorOf(f.designation, 'Designation') }}</div>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label for="joiningDate" class="form-label">Joining date *</label>
+            <input id="joiningDate" type="date" class="form-control" formControlName="joiningDate"
+                   [class.is-invalid]="isInvalid(f.joiningDate)" />
+            <div class="invalid-feedback">{{ errorOf(f.joiningDate, 'Joining date') }}</div>
+          </div>
+          <div class="col-12 col-md-4">
+            <label for="employmentType" class="form-label">Employment type *</label>
+            <select id="employmentType" class="form-select" formControlName="employmentType">
+              @for (t of employmentTypes; track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-12 col-md-4">
+            <label for="employmentStatus" class="form-label">Status *</label>
+            <select id="employmentStatus" class="form-select" formControlName="employmentStatus">
+              @for (s of statuses; track s) {
+                <option [value]="s">{{ s }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label for="salary" class="form-label">Monthly salary *</label>
+            <input id="salary" type="number" class="form-control" formControlName="salary"
+                   [class.is-invalid]="isInvalid(f.salary)" />
+            <div class="invalid-feedback">{{ errorOf(f.salary, 'Salary') }}</div>
+          </div>
+          <div class="col-12 col-md-6">
+            <label for="profileImageUrl" class="form-label">Profile image URL (optional)</label>
+            <input id="profileImageUrl" class="form-control" formControlName="profileImageUrl"
+                   placeholder="https://..." [class.is-invalid]="isInvalid(f.profileImageUrl)" />
+            <div class="invalid-feedback">Enter a full link starting with http:// or https://</div>
+          </div>
+
+          <div class="col-12">
+            <label for="address" class="form-label">Address *</label>
+            <textarea id="address" rows="2" class="form-control" formControlName="address"
+                      [class.is-invalid]="isInvalid(f.address)"></textarea>
+            <div class="invalid-feedback">{{ errorOf(f.address, 'Address') }}</div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+              Saving...
+            } @else {
+              <i class="bi bi-check-lg"></i> {{ editId === null ? 'Add Employee' : 'Save Changes' }}
+            }
+          </button>
+          <a routerLink="/employees" class="btn btn-light">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+}

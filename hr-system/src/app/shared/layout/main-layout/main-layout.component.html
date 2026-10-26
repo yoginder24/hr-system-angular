@@ -1,0 +1,25 @@
+<app-sidebar [isOpen]="sidebarOpen()" (linkClicked)="closeSidebar()" />
+
+<!-- Dark layer behind the sidebar on mobile. Clicking it closes the sidebar. -->
+@if (sidebarOpen()) {
+  <div class="sidebar-backdrop" (click)="closeSidebar()"></div>
+}
+
+<!-- Success / error message -->
+@if (notice(); as n) {
+  <div class="toast-box">
+    <div [class]="'alert shadow mb-0 d-flex justify-content-between align-items-start gap-3 alert-' + n.type" role="alert">
+      <span>{{ n.text }}</span>
+      <button type="button" class="btn-close" aria-label="Close" (click)="dismissNotice()"></button>
+    </div>
+  </div>
+}
+
+<div class="main-area">
+  <app-navbar (menuClick)="toggleSidebar()" />
+
+  <main class="p-3 p-lg-4">
+    <!-- The current page appears here -->
+    <router-outlet />
+  </main>
+</div>

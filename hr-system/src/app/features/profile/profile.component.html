@@ -1,0 +1,237 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="h4 mb-0">{{ isOwn ? 'My Profile' : 'Employee Profile' }}</h2>
+  <a [routerLink]="backLink" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left"></i> {{ backLabel }}
+  </a>
+</div>
+
+@if (loading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-2">Loading profile...</p>
+  </div>
+} @else if (errorMessage()) {
+  <div class="alert alert-danger d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-exclamation-triangle"></i> {{ errorMessage() }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="load()">Retry</button>
+  </div>
+} @else if (employee(); as e) {
+  <!-- Header -->
+  <div class="card stat-card mb-3">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-3">
+        @if (e.profileImageUrl) {
+          <img class="avatar avatar-lg" [src]="e.profileImageUrl" [alt]="e.firstName" />
+        } @else {
+          <span class="avatar avatar-lg">{{ e.firstName[0] }}{{ e.lastName[0] }}</span>
+        }
+        <div>
+          <h3 class="h5 mb-1">{{ e.firstName }} {{ e.lastName }}</h3>
+          <div class="text-muted">{{ e.designation }} - {{ departmentName() }}</div>
+          <span class="badge text-bg-primary mt-1 me-1">{{ e.employeeCode }}</span>
+          <span [class]="'badge mt-1 ' + employeeClass(e.employmentStatus)">{{ e.employmentStatus }}</span>
+        </div>
+      </div>
+      @if (canEdit) {
+        <a [routerLink]="['/employees', e.id, 'edit']" class="btn btn-primary">
+          <i class="bi bi-pencil"></i> Edit
+        </a>
+      }
+    </div>
+  </div>
+
+  <!-- Personal and job information -->
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-lg-6">
+      <div class="card stat-card h-100">
+        <div class="card-header bg-white fw-semibold">
+          <i class="bi bi-person-lines-fill"></i> Personal and contact
+        </div>
+        <div class="card-body">
+          <dl class="row mb-0">
+            <dt class="col-5">Email</dt><dd class="col-7">{{ e.email }}</dd>
+            <dt class="col-5">Phone</dt><dd class="col-7">{{ e.phone }}</dd>
+            <dt class="col-5">Gender</dt><dd class="col-7">{{ e.gender }}</dd>
+            <dt class="col-5">Date of birth</dt><dd class="col-7">{{ e.dateOfBirth | date: 'mediumDate' }}</dd>
+            <dt class="col-5">Address</dt><dd class="col-7">{{ e.address }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card stat-card h-100">
+        <div class="card-header bg-white fw-semibold">
+          <i class="bi bi-briefcase"></i> Job information
+        </div>
+        <div class="card-body">
+          <dl class="row mb-0">
+            <dt class="col-5">Department</dt><dd class="col-7">{{ departmentName() }}</dd>
+            <dt class="col-5">Designation</dt><dd class="col-7">{{ e.designation }}</dd>
+            <dt class="col-5">Joining date</dt><dd class="col-7">{{ e.joiningDate | date: 'mediumDate' }}</dd>
+            <dt class="col-5">Employment type</dt><dd class="col-7">{{ e.employmentType }}</dd>
+            <dt class="col-5">Status</dt><dd class="col-7">{{ e.employmentStatus }}</dd>
+            @if (canSeePayroll) {
+              <dt class="col-5">Current salary</dt>
+              <dd class="col-7">{{ e.salary | currency: 'INR' : 'symbol' : '1.0-0' }}</dd>
+            }
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance summary -->
+  @if (canSeeAttendance) {
+    <div class="card stat-card mb-3">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-clock-history"></i> Attendance summary
+      </div>
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <span class="badge text-bg-light border">Records: {{ attendanceCounts().total }}</span>
+          <span class="badge text-bg-success">Present: {{ attendanceCounts().present }}</span>
+          <span class="badge text-bg-warning">Late: {{ attendanceCounts().late }}</span>
+          <span class="badge text-bg-info">Half Day: {{ attendanceCounts().halfDay }}</span>
+          <span class="badge text-bg-danger">Absent: {{ attendanceCounts().absent }}</span>
+        </div>
+
+        @if (recentAttendance().length > 0) {
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr><th>Date</th><th>Check-in</th><th>Check-out</th><th>Hours</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                @for (r of recentAttendance(); track r.id) {
+                  <tr>
+                    <td>{{ r.date | date: 'EEE, d MMM y' }}</td>
+                    <td>{{ r.checkIn || '-' }}</td>
+                    <td>{{ r.checkOut || '-' }}</td>
+                    <td>{{ hours(r) }}</td>
+                    <td><span [class]="'badge ' + attendanceClass(r.status)">{{ r.status }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <small class="text-muted d-block mt-2">Showing the 5 most recent records (entered manually by HR or Admin).</small>
+        } @else {
+          <p class="text-muted mb-0">No attendance records yet.</p>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Leave -->
+  @if (canSeeLeave) {
+    <div class="card stat-card mb-3">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-calendar-check"></i> Leave
+      </div>
+      <div class="card-body">
+        <div class="alert alert-secondary py-2 small">
+          <strong>Demo leave summary.</strong> This demo assumes {{ demoAllowance }} days per year
+          (Casual, Sick and Annual leave only). It is not a real leave policy.
+        </div>
+
+        <div class="row g-3 mb-3 text-center">
+          <div class="col-6 col-md-3">
+            <div class="text-muted small">Allowance</div>
+            <div class="fs-4 fw-bold">{{ leaveInfo().allowance }}</div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="text-muted small">Used (approved)</div>
+            <div class="fs-4 fw-bold text-success">{{ leaveInfo().used }}</div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="text-muted small">Pending</div>
+            <div class="fs-4 fw-bold text-warning">{{ leaveInfo().pending }}</div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="text-muted small">Remaining</div>
+            <div class="fs-4 fw-bold text-primary">{{ leaveInfo().remaining }}</div>
+          </div>
+        </div>
+
+        <h4 class="h6 text-uppercase text-muted">Leave history</h4>
+        @if (leaveHistory().length > 0) {
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr><th>Type</th><th>From</th><th>To</th><th class="text-center">Days</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody>
+                @for (r of leaveHistory(); track r.id) {
+                  <tr>
+                    <td>{{ r.leaveType }}</td>
+                    <td>{{ r.startDate | date: 'd MMM y' }}</td>
+                    <td>{{ r.endDate | date: 'd MMM y' }}</td>
+                    <td class="text-center">{{ days(r) }}</td>
+                    <td><span [class]="'badge ' + leaveClass(r.status)">{{ r.status }}</span></td>
+                    <td class="text-end">
+                      <a [routerLink]="['/leave', r.id]" class="btn btn-sm btn-outline-primary" title="View details">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="text-muted mb-0">No leave requests yet.</p>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Payroll summary -->
+  @if (canSeePayroll) {
+    <div class="card stat-card mb-3">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-cash-stack"></i> Payroll summary</span>
+        <a routerLink="/payroll" class="btn btn-sm btn-outline-secondary">Open payroll</a>
+      </div>
+      <div class="card-body">
+        @if (latestPayroll(); as p) {
+          <div class="mb-3">
+            <div class="text-muted small">
+              Latest net salary ({{ (p.salaryMonth + '-01') | date: 'MMMM y' }}, {{ p.status }})
+            </div>
+            <div class="fs-3 fw-bold text-primary">{{ p.netSalary | currency: 'INR' : 'symbol' : '1.0-2' }}</div>
+          </div>
+        }
+
+        @if (recentPayroll().length > 0) {
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr><th>Month</th><th class="text-end">Net salary</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody>
+                @for (p of recentPayroll(); track p.id) {
+                  <tr>
+                    <td>{{ (p.salaryMonth + '-01') | date: 'MMM y' }}</td>
+                    <td class="text-end">{{ p.netSalary | currency: 'INR' : 'symbol' : '1.0-2' }}</td>
+                    <td><span [class]="'badge ' + payrollClass(p.status)">{{ p.status }}</span></td>
+                    <td class="text-end">
+                      <a [routerLink]="['/payroll', p.id]" class="btn btn-sm btn-outline-primary" title="View details">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <small class="text-muted d-block mt-2">Demo payroll only. Not a payslip and not tax-compliant.</small>
+        } @else {
+          <p class="text-muted mb-0">No payroll records yet.</p>
+        }
+      </div>
+    </div>
+  }
+}

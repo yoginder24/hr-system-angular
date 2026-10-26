@@ -1,0 +1,114 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="h4 mb-0">{{ editId === null ? 'Add Payroll Record' : 'Edit Payroll Record' }}</h2>
+  <a routerLink="/payroll" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left"></i> Back to list
+  </a>
+</div>
+
+@if (loading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+} @else if (loadError()) {
+  <div class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle"></i> {{ loadError() }}
+  </div>
+} @else {
+  <div class="card stat-card">
+    <div class="card-body">
+      @if (formError()) {
+        <div class="alert alert-danger py-2" role="alert">
+          <i class="bi bi-exclamation-triangle"></i> {{ formError() }}
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label for="employeeId" class="form-label">Employee *</label>
+            <select id="employeeId" class="form-select" formControlName="employeeId"
+                    [class.is-invalid]="isInvalid(f.employeeId)">
+              <option [ngValue]="0" disabled>Select employee</option>
+              @for (e of employees(); track e.id) {
+                <option [ngValue]="e.id">{{ e.firstName }} {{ e.lastName }} ({{ e.employeeCode }})</option>
+              }
+            </select>
+            <div class="invalid-feedback">Please select an employee.</div>
+            @if (editId !== null) {
+              <div class="form-text">The employee cannot be changed when editing.</div>
+            }
+          </div>
+
+          <div class="col-12 col-md-3">
+            <label for="salaryMonth" class="form-label">Salary month *</label>
+            <input id="salaryMonth" type="month" class="form-control" formControlName="salaryMonth"
+                   [class.is-invalid]="isInvalid(f.salaryMonth)" />
+            <div class="invalid-feedback">{{ errorOf(f.salaryMonth, 'Salary month') }}</div>
+          </div>
+
+          <div class="col-12 col-md-3">
+            <label for="status" class="form-label">Status *</label>
+            <select id="status" class="form-select" formControlName="status">
+              @for (s of statuses; track s) {
+                <option [value]="s">{{ s }}</option>
+              }
+            </select>
+            <div class="form-text">Employees see Processed and Paid only.</div>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label for="basicSalary" class="form-label">Basic salary *</label>
+            <input id="basicSalary" type="number" class="form-control" formControlName="basicSalary"
+                   [class.is-invalid]="isInvalid(f.basicSalary)" />
+            <div class="invalid-feedback">{{ errorOf(f.basicSalary, 'Basic salary') }}</div>
+            @if (editId === null) {
+              <div class="form-text">Filled from the employee's current salary. You can change it.</div>
+            }
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label for="allowances" class="form-label">Allowances *</label>
+            <input id="allowances" type="number" class="form-control" formControlName="allowances"
+                   [class.is-invalid]="isInvalid(f.allowances)" />
+            <div class="invalid-feedback">{{ errorOf(f.allowances, 'Allowances') }}</div>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label for="deductions" class="form-label">Deductions *</label>
+            <input id="deductions" type="number" class="form-control" formControlName="deductions"
+                   [class.is-invalid]="isInvalid(f.deductions) || showDeductionError()" />
+            <div class="invalid-feedback">{{ errorOf(f.deductions, 'Deductions') }}</div>
+          </div>
+
+          @if (showDeductionError()) {
+            <div class="col-12">
+              <div class="text-danger small">Deductions cannot be more than Basic salary + Allowances.</div>
+            </div>
+          }
+
+          <div class="col-12">
+            <div class="alert alert-info py-2 mb-0">
+              <i class="bi bi-calculator"></i>
+              Net salary = Basic + Allowances - Deductions =
+              <strong>{{ netSalary() | currency: 'INR' : 'symbol' : '1.0-2' }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+              Saving...
+            } @else {
+              <i class="bi bi-check-lg"></i> {{ editId === null ? 'Add Payroll' : 'Save Changes' }}
+            }
+          </button>
+          <a routerLink="/payroll" class="btn btn-light">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -1,0 +1,129 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h2 class="h4 mb-1">User Accounts</h2>
+    <p class="text-muted mb-0">Create login accounts and manage their roles (Admin only).</p>
+  </div>
+  <a routerLink="/users/new" class="btn btn-primary">
+    <i class="bi bi-plus-lg"></i> Add User
+  </a>
+</div>
+
+<!-- Search and filter -->
+<div class="card stat-card mb-3">
+  <div class="card-body">
+    <div class="row g-2">
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input
+            type="search"
+            class="form-control"
+            placeholder="Search by email, name or employee code"
+            aria-label="Search users"
+            [value]="searchText()"
+            (input)="onSearch($event)"
+          />
+        </div>
+      </div>
+      <div class="col-7 col-md-4">
+        <select class="form-select" aria-label="Filter by role" (change)="onRoleChange($event)">
+          <option value="" [selected]="roleFilter() === ''">All roles</option>
+          @for (r of roles; track r) {
+            <option [value]="r" [selected]="roleFilter() === r">{{ r }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-5 col-md-2">
+        <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+          <i class="bi bi-x-circle"></i> Clear
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-2">Loading users...</p>
+  </div>
+} @else if (errorMessage()) {
+  <div class="alert alert-danger d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-exclamation-triangle"></i> {{ errorMessage() }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="loadData()">Retry</button>
+  </div>
+} @else {
+  <div class="card stat-card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Employee</th>
+            <th>Login email</th>
+            <th>Role</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filteredRows(); track row.id) {
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ row.employeeName }}</div>
+                <div class="small text-muted">{{ row.employeeCode }}</div>
+              </td>
+              <td>
+                {{ row.email }}
+                @if (isSelf(row)) {
+                  <span class="badge text-bg-light border ms-1">You</span>
+                }
+              </td>
+              <td><span [class]="'badge ' + roleClass(row.role)">{{ row.role }}</span></td>
+              <td class="text-end text-nowrap">
+                <a [routerLink]="['/users', row.id, 'edit']" class="btn btn-sm btn-outline-secondary" title="Edit">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <!-- The span carries the tooltip, because disabled buttons do not show one -->
+                <span class="d-inline-block ms-1" [title]="deleteBlockedReason(row) || 'Delete'">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    [disabled]="deleteBlockedReason(row) !== ''"
+                    (click)="askDelete(row)"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="text-center text-muted py-5">
+                <i class="bi bi-person-gear fs-1 d-block mb-2"></i>
+                No users match your search or filter.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer bg-white">
+      <small class="text-muted">
+        Showing {{ filteredRows().length }} of {{ users().length }} accounts. Demo only: passwords are
+        stored as plain text in db.json and can be read through the open API.
+      </small>
+    </div>
+  </div>
+}
+
+@if (userToDelete(); as u) {
+  <app-confirm-dialog
+    title="Delete user account"
+    confirmText="Delete"
+    [message]="'Delete the login account ' + u.email + ' (' + u.employeeName + ')? The employee record stays, but this person can no longer log in.'"
+    [busy]="deleting()"
+    (confirmed)="confirmDelete()"
+    (cancelled)="cancelDelete()"
+  />
+}

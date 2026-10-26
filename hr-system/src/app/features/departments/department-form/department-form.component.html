@@ -1,0 +1,69 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="h4 mb-0">{{ editId === null ? 'Add Department' : 'Edit Department' }}</h2>
+  <a routerLink="/departments" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left"></i> Back to list
+  </a>
+</div>
+
+@if (loading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+} @else if (loadError()) {
+  <div class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle"></i> {{ loadError() }}
+  </div>
+} @else {
+  <div class="card stat-card">
+    <div class="card-body">
+      @if (formError()) {
+        <div class="alert alert-danger py-2" role="alert">
+          <i class="bi bi-exclamation-triangle"></i> {{ formError() }}
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label for="name" class="form-label">Department name *</label>
+            <input id="name" class="form-control" formControlName="name"
+                   placeholder="e.g. Legal" [class.is-invalid]="isInvalid(f.name)" />
+            <div class="invalid-feedback">{{ errorOf(f.name, 'Name') }}</div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label for="managerId" class="form-label">Department manager</label>
+            <select id="managerId" class="form-select" formControlName="managerId">
+              <option [ngValue]="0">No manager</option>
+              @for (e of employees(); track e.id) {
+                <option [ngValue]="e.id">{{ e.firstName }} {{ e.lastName }} ({{ e.employeeCode }})</option>
+              }
+            </select>
+          </div>
+
+          <div class="col-12">
+            <label for="description" class="form-label">Description *</label>
+            <textarea id="description" rows="3" class="form-control" formControlName="description"
+                      [class.is-invalid]="isInvalid(f.description)"></textarea>
+            <div class="invalid-feedback">{{ errorOf(f.description, 'Description') }}</div>
+            <div class="form-text">10-200 characters ({{ f.description.value.length }}/200).</div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+              Saving...
+            } @else {
+              <i class="bi bi-check-lg"></i> {{ editId === null ? 'Add Department' : 'Save Changes' }}
+            }
+          </button>
+          <a routerLink="/departments" class="btn btn-light">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+}

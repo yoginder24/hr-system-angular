@@ -1,0 +1,134 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="h4 mb-0">{{ editId === null ? 'Add User Account' : 'Edit User Account' }}</h2>
+  <a routerLink="/users" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left"></i> Back to list
+  </a>
+</div>
+
+@if (loading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+} @else if (loadError()) {
+  <div class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle"></i> {{ loadError() }}
+  </div>
+} @else {
+  <div class="card stat-card">
+    <div class="card-body">
+      <div class="alert alert-warning py-2 small">
+        <i class="bi bi-shield-exclamation"></i>
+        <strong>Demo only.</strong> Passwords are stored as plain text in db.json and can be read through
+        the open API. A real system stores only password hashes on a trusted backend.
+      </div>
+
+      @if (formError()) {
+        <div class="alert alert-danger py-2" role="alert">
+          <i class="bi bi-exclamation-triangle"></i> {{ formError() }}
+        </div>
+      }
+
+      @if (editId === null && employeeOptions().length === 0) {
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle"></i>
+          Every employee already has a user account. Add a new employee first, then create the account.
+          <a routerLink="/employees/new" class="alert-link">Add employee</a>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label for="employeeId" class="form-label">Employee *</label>
+            <select id="employeeId" class="form-select" formControlName="employeeId"
+                    [class.is-invalid]="isInvalid(f.employeeId)">
+              <option [ngValue]="0" disabled>Select employee</option>
+              @for (e of employeeOptions(); track e.id) {
+                <option [ngValue]="e.id">{{ e.firstName }} {{ e.lastName }} ({{ e.employeeCode }})</option>
+              }
+            </select>
+            <div class="invalid-feedback">{{ errorOf(f.employeeId, 'Employee') }}</div>
+            <div class="form-text">
+              @if (editId === null) {
+                Only employees without an account are listed.
+              } @else {
+                The employee cannot be changed.
+              }
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label for="role" class="form-label">Role *</label>
+            <select id="role" class="form-select" formControlName="role">
+              @for (r of roles; track r) {
+                <option [value]="r">{{ r }}</option>
+              }
+            </select>
+            @if (isOwnAccount) {
+              <div class="form-text">You cannot change your own role.</div>
+            }
+          </div>
+
+          <div class="col-12">
+            <label for="email" class="form-label">Login email *</label>
+            <input id="email" type="email" class="form-control" formControlName="email"
+                   placeholder="name@company.com" [class.is-invalid]="isInvalid(f.email)" />
+            <div class="invalid-feedback">{{ errorOf(f.email, 'Email') }}</div>
+            <div class="form-text">Used to log in. Suggested from the employee's email.</div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label for="password" class="form-label">
+              {{ editId === null ? 'Password *' : 'New password (optional)' }}
+            </label>
+            <div class="input-group has-validation">
+              <input id="password" class="form-control" formControlName="password"
+                     autocomplete="new-password"
+                     [type]="showPassword() ? 'text' : 'password'"
+                     [class.is-invalid]="isInvalid(f.password)" />
+              <button type="button" class="btn btn-outline-secondary" (click)="toggleShowPassword()"
+                      [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
+                <i [class]="showPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+              </button>
+              <div class="invalid-feedback">{{ errorOf(f.password, 'Password') }}</div>
+            </div>
+            <div class="form-text">
+              At least 8 characters with a letter and a number.
+              @if (editId !== null) {
+                Leave empty to keep the current password.
+              }
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label for="confirmPassword" class="form-label">
+              {{ editId === null ? 'Confirm password *' : 'Confirm new password' }}
+            </label>
+            <input id="confirmPassword" class="form-control" formControlName="confirmPassword"
+                   autocomplete="new-password"
+                   [type]="showPassword() ? 'text' : 'password'"
+                   [class.is-invalid]="isInvalid(f.confirmPassword) || showMismatch()" />
+            <div class="invalid-feedback">
+              {{ showMismatch() ? 'Passwords do not match.' : errorOf(f.confirmPassword, 'Confirm password') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="btn btn-primary"
+                  [disabled]="saving() || (editId === null && employeeOptions().length === 0)">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+              Saving...
+            } @else {
+              <i class="bi bi-check-lg"></i> {{ editId === null ? 'Create Account' : 'Save Changes' }}
+            }
+          </button>
+          <a routerLink="/users" class="btn btn-light">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -1,0 +1,78 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="h4 mb-0">Employee Details</h2>
+  <a routerLink="/employees" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left"></i> Back to list
+  </a>
+</div>
+
+@if (loading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+} @else if (errorMessage()) {
+  <div class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle"></i> {{ errorMessage() }}
+  </div>
+} @else if (employee(); as e) {
+  <div class="card stat-card">
+    <div class="card-body">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+          @if (e.profileImageUrl) {
+            <img class="avatar avatar-lg" [src]="e.profileImageUrl" [alt]="e.firstName" />
+          } @else {
+            <span class="avatar avatar-lg">{{ e.firstName[0] }}{{ e.lastName[0] }}</span>
+          }
+          <div>
+            <h3 class="h5 mb-1">{{ e.firstName }} {{ e.lastName }}</h3>
+            <div class="text-muted">{{ e.designation }} - {{ departmentName() }}</div>
+            <span class="badge text-bg-primary mt-1">{{ e.employeeCode }}</span>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+          @if (canViewProfile) {
+            <a [routerLink]="['/profile', e.id]" class="btn btn-outline-primary">
+              <i class="bi bi-person-lines-fill"></i> Full profile
+            </a>
+          }
+          @if (canEdit) {
+            <a [routerLink]="['/employees', e.id, 'edit']" class="btn btn-primary">
+              <i class="bi bi-pencil"></i> Edit
+            </a>
+          }
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-12 col-md-6">
+          <h4 class="h6 text-uppercase text-muted">Personal and contact</h4>
+          <dl class="row mb-0">
+            <dt class="col-5">Email</dt><dd class="col-7">{{ e.email }}</dd>
+            <dt class="col-5">Phone</dt><dd class="col-7">{{ e.phone }}</dd>
+            <dt class="col-5">Gender</dt><dd class="col-7">{{ e.gender }}</dd>
+            <dt class="col-5">Date of birth</dt><dd class="col-7">{{ e.dateOfBirth | date: 'mediumDate' }}</dd>
+            <dt class="col-5">Address</dt><dd class="col-7">{{ e.address }}</dd>
+          </dl>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <h4 class="h6 text-uppercase text-muted">Job</h4>
+          <dl class="row mb-0">
+            <dt class="col-5">Department</dt><dd class="col-7">{{ departmentName() }}</dd>
+            <dt class="col-5">Designation</dt><dd class="col-7">{{ e.designation }}</dd>
+            <dt class="col-5">Joining date</dt><dd class="col-7">{{ e.joiningDate | date: 'mediumDate' }}</dd>
+            <dt class="col-5">Type</dt><dd class="col-7">{{ e.employmentType }}</dd>
+            <dt class="col-5">Status</dt><dd class="col-7">{{ e.employmentStatus }}</dd>
+            @if (canSeeSalary) {
+              <dt class="col-5">Salary</dt>
+              <dd class="col-7">{{ e.salary | currency: 'INR' : 'symbol' : '1.0-0' }}</dd>
+            }
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+}
